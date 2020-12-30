@@ -4,9 +4,9 @@
 
 #### Preprocessing :rocket:
 
-**Issue 1**: Many non-numeric features to be converted.
-**Issue 2**: Bad data entries to be removed / editted.
-**Issue 3**: How to engineer **meaningful** features, i.e. kind of like "transform" but not numeric. E.g. 國定假日、國家. 
+- **Issue 1**: Many non-numeric features to be converted.
+- **Issue 2**: Bad data entries to be removed / editted.
+- **Issue 3**: How to engineer **meaningful** features, i.e. kind of like "transform" but not numeric. E.g. 國定假日、國家. 
 
 #### Training :rocket:
 
