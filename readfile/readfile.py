@@ -1,81 +1,45 @@
 import csv
 import argparse
+import pandas as pd
 import re
-from parse import parse
-from datetime import date,strptime
+import time
+from datetime import date
+from sklearn import datasets
 
 parser = argparse.ArgumentParser()
 parser.add_argument("infile")
 parser.add_argument("outfile")
-parser.parse_args()
-
-with open(args.infile, newline='') as csvfile:
-	rows = csv.reader(csvfile)
-
-dict_hotel = {}
-dict_month = {}
-dict_meal = {}
-dict_country = {}
-dict_market_segment = {}
-dict_distribution_channel = {}
-dict_reserved_type = {}
-dict_assigned_type = {}
-dict_deposit = {}
-dict_agent = {}
-dict_company = {}
-dict_customer_type = {}
-dict_reserve_status = {}
-
-def date_to_int(str_date):
-	return date.fromisoformat(str_date).timestamp()/86400
+args=parser.parse_args()
 
 
-def to_num(feature_index,dict_feature):
-	count=0
-	for row in rows:
-		if !(row[feature_index] in dict_feature):
-			dict_feature[feature_index]=count
-			count++
+def get_arrival(year,month,date):
+	return time.mktime(time.strptime(str(year)+' '+str(month)+' '+str(date),'%Y %B %d'))
 
-def numerify(entry):
-	newline = []
-	count = 0
-	newline[count++]=dict_hotel[entry[0]]
-	newline[count++]=entry[1]
-	newline[count++]=entry[2]
-	newline[count++]=datetime.strptime(str(entry[3])+"/"+entry[4]+"/"+str(entry[6]), '%y/%B/%d').timestamp()/86400
-	newline[count++]=entry[7]
-	newline[count++]=entry[8]
-	newline[count++]=entry[9]
-	newline[count++]=entry[10]
-	newline[count++]=entry[11]
-	newline[count++]=dict_meal[entry[12]]
-	newline[count++]=dict_country[entry[13]]
-	newline[count++]=dict_market_segment[entry[14]]
-	newline[count++]=dict_distribution_channel[entry[15]]
-	newline[count++]=entry[16]
-	newline[count++]=entry[17]
-	newline[count++]=entry[18]
-	newline[count++]=dict_reserved_type[entry[19]]
-	newline[count++]=dict_assigned_type[entry[20]]
-	newline[count++]=entry[21]
-	newline[count++]=dict_deposit[entry[22]]
-	newline[count++]=entry[23]#non-numerical
-	newline[count++]=entry[24]#non-numerical
-	newline[count++]=entry[25]
-	newline[count++]=dict_customer_type[entry[26]]
-	newline[count++]=entry[27]
-	newline[count++]=entry[28]
-	newline[count++]=entry[29]
-	newline[count++]=dict_reserve_status[entry[30]]
-	newline[count++]=date.fromisoformat(entry[31]).timestamp()/86400
-	return newline
+def iso_to_stamp(_x):
+	DAY = 24*60*60
+	a = date.fromisoformat(str(_x))
+	return (a-date(1970, 1, 1)).days
 
 
-map(numerify,rows)
+df = pd.read_csv(args.infile, sep=r'\s*,\s*', header=0, encoding='ascii', engine='python')
+aaa = df[['reservation_status_date']]
+print(aaa)
+df[['hotel']]=df[['hotel']].apply(lambda x: x=='Resort Hotel').astype(int)
+df[['country']]=df[['country']].apply(lambda x: x=='PRT').astype(int)
+df[['deposit_type']]=df[['deposit_type']].apply(lambda x: x!='No Deposit').astype(int) #其實有三類
+df[['reservation_status']]=df[['reservation_status']].apply(lambda x: x=='Check-Out').astype(int)
 
+df[['arr_date']]=df.apply(lambda x: get_arrival(year = x['arrival_date_year'], month = x['arrival_date_month'], date = x['arrival_date_day_of_month']), axis=1)
+df[['reservation_status_date']]=df.apply(lambda x: iso_to_stamp(_x=x['reservation_status_date']), axis=1)
 
+df.drop(['ID','arrival_date_year','arrival_date_month','arrival_date_day_of_month'],axis=1)
 
+df = pd.get_dummies(data=df, columns=['meal', 'market_segment','distribution_channel','reserved_room_type','assigned_room_type','customer_type'])
+# df.drop(['meal', 'market_segment','distribution_channel','reserved_room_type','assigned_room_type','customer_type'],axis=1)
+label = df[['adr','is_canceled']]
+df.drop(['adr','is_canceled'],axis=1)
+print(df)
+print(label)
 
 
 
