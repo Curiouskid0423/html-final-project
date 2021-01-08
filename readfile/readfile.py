@@ -4,48 +4,55 @@ import pandas as pd
 import re
 import time
 from datetime import date
+from sklearn.svm import SVC
 from sklearn import datasets
+from sklearn.model_selection import train_test_split
 
 parser = argparse.ArgumentParser()
 parser.add_argument("infile")
-parser.add_argument("outfile")
+
 args=parser.parse_args()
 
+d_month = {"January":1,
+"February":2,
+"March":3,
+"April":4,
+"May":5,
+"June":6,
+"July":7,
+"August":8,
+"September":9,
+"October":10,
+"November":11,
+"December":12
+}
 
-def get_arrival(year,month,date):
-	return time.mktime(time.strptime(str(year)+' '+str(month)+' '+str(date),'%Y %B %d'))
-
-def iso_to_stamp(_x):
-	DAY = 24*60*60
-	a = date.fromisoformat(str(_x))
-	return (a-date(1970, 1, 1)).days
-
+def first_4(x):
+	return int(x[:4])
+def mid_2(x):
+	return int(x[5:7])
+def last_2(x):
+	return int(x[8:])
 
 df = pd.read_csv(args.infile, sep=r'\s*,\s*', header=0, encoding='ascii', engine='python')
-aaa = df[['reservation_status_date']]
-print(aaa)
+
 df[['hotel']]=df[['hotel']].apply(lambda x: x=='Resort Hotel').astype(int)
 df[['country']]=df[['country']].apply(lambda x: x=='PRT').astype(int)
-df[['deposit_type']]=df[['deposit_type']].apply(lambda x: x!='No Deposit').astype(int) #其實有三類
-df[['reservation_status']]=df[['reservation_status']].apply(lambda x: x=='Check-Out').astype(int)
 
-df[['arr_date']]=df.apply(lambda x: get_arrival(year = x['arrival_date_year'], month = x['arrival_date_month'], date = x['arrival_date_day_of_month']), axis=1)
-df[['reservation_status_date']]=df.apply(lambda x: iso_to_stamp(_x=x['reservation_status_date']), axis=1)
+#df[['reservation_status_date']]=df.apply(lambda x: iso_to_stamp(_x=x['reservation_status_date']))
+df[['reserve_year']]=df[['reservation_status_date']].apply(lambda x: x.map(first_4))
+df[['reserve_month']]=df[['reservation_status_date']].apply(lambda x: x.map(mid_2))
+df[['reserve_date']]=df[['reservation_status_date']].apply(lambda x: x.map(last_2))
+df[['arrival_date_month']]=df[['arrival_date_month']].apply(lambda x: x.map(d_month))
 
-df.drop(['ID','arrival_date_year','arrival_date_month','arrival_date_day_of_month'],axis=1)
-
-df = pd.get_dummies(data=df, columns=['meal', 'market_segment','distribution_channel','reserved_room_type','assigned_room_type','customer_type'])
+df = pd.get_dummies(data=df, columns=['reservation_status','deposit_type','meal', 'market_segment','distribution_channel','reserved_room_type','assigned_room_type','customer_type'])
 # df.drop(['meal', 'market_segment','distribution_channel','reserved_room_type','assigned_room_type','customer_type'],axis=1)
 label = df[['adr','is_canceled']]
-df.drop(['adr','is_canceled'],axis=1)
-print(df)
-print(label)
+df = df.drop(['adr','is_canceled','reservation_status_date'],axis=1)
+df = df.astype(float)
+df = df.fillna(0)
 
+svm = SVC(kernel='linear',probability=True)
 
-
-
-
-
-
-
-
+X_train,X_test,y_train,y_test=train_test_split(df,label[['is_canceled']],test_size=0.2,random_state=0)
+svm.fit(X_train,y_train['is_canceled'].values)
