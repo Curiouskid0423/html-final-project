@@ -40,13 +40,13 @@ reg.fit(X_train,y_train['adr'])
 predict_cancel = clf.predict(X_test)
 predict_adr = reg.predict(X_test)
 out = pd.DataFrame()
-out['stays_in_week_nights']=X_test['stays_in_week_nights']
-out['stays_in_weekend_nights']=X_test['stays_in_weekend_nights']
-out['arrival_date_year']=X_test['arrival_date_year']
-out['arrival_date_month']=X_test['arrival_date_month']
-out['arrival_date_day_of_month']=X_test['arrival_date_day_of_month']
-out['adr']=pd.Series(predict_adr)
-out['is_canceled']=pd.Series(predict_cancel)
+out[['stays_in_week_nights']]=X_test[['stays_in_week_nights']]
+out[['stays_in_weekend_nights']]=X_test[['stays_in_weekend_nights']]
+out[['arrival_date_year']]=X_test[['arrival_date_year']]
+out[['arrival_date_month']]=X_test[['arrival_date_month']]
+out[['arrival_date_day_of_month']]=X_test[['arrival_date_day_of_month']]
+out[['adr']]=pd.Series(predict_adr)
+out[['is_canceled']]=pd.Series(predict_cancel)
 out.to_csv('result.csv')
 #accuracy = metrics.accuracy_score(y_test['is_canceled'],predict_cancel)
 #accuracy_reg = metrics.mean_squared_error(y_test['adr'],predict_adr)
