@@ -4,6 +4,7 @@ import pandas as pd
 from datetime import date
 from sklearn import datasets,ensemble,metrics
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import PolynomialFeatures
 
 parser = argparse.ArgumentParser()
 parser.add_argument("infile")
@@ -25,6 +26,10 @@ for c in missing_cols:
     X_test[c] = 0
 X_test = X_test[X_train.columns]
 print(X_train.columns)
+
+poly = PolynomialFeatures(2,interaction_only=True)
+X_train=poly.fit_transform(X_train)
+X_test=poly.fit_transform(X_test)
 
 forest_class = ensemble.RandomForestClassifier(n_estimators=100,verbose=1)
 forest_reg = ensemble.RandomForestRegressor(200,verbose=1)
