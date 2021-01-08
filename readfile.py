@@ -45,8 +45,9 @@ df[['arrival_date_month']]=df[['arrival_date_month']].apply(lambda x: x.map(d_mo
 
 df = pd.get_dummies(data=df, columns=['deposit_type','meal', 'market_segment','distribution_channel','reserved_room_type','assigned_room_type','customer_type'])
 # df.drop(['meal', 'market_segment','distribution_channel','reserved_room_type','assigned_room_type','customer_type'],axis=1)
-label = df[['adr','is_canceled']]
-df = df.drop(['ID','reservation_status','reservation_status_date'],axis=1)
+#label = df[['adr','is_canceled']]
+df = df.drop(['ID'],axis=1)
+df = df.drop(['reservation_status','reservation_status_date'],axis=1)
 df = df.astype(float)
 df = df.fillna(0)
 df.to_csv(args.outfile)
