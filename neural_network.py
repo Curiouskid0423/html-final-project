@@ -25,24 +25,25 @@ missing_cols = set( X_train.columns ) - set( X_test.columns )
 for c in missing_cols:
     X_test[c] = 0
 X_test = X_test[X_train.columns]
-
+X_train=X_train.drop(['arrival_date_year'],axis=1)
+X_test=X_test.drop(['arrival_date_year'],axis=1)
 sc = StandardScaler()
 sc.fit(X_train)
-X_train = sc.transform(X_train)
-X_test = sc.transform(X_test)
+X_train_std = sc.transform(X_train)
+X_test_std = sc.transform(X_test)
 
-clf = MLPClassifier(solver='adam',alpha=1e-4,hidden_layer_sizes=(20),random_state=1,max_iter=5000,verbose=True)
-reg = MLPRegressor(solver='adam',alpha=1e-4,hidden_layer_sizes=(20,5),random_state=1,max_iter=5000,verbose=True)
+clf = MLPClassifier(solver='adam',learning_rate_init=0.001,alpha=1e-5,hidden_layer_sizes=(20),random_state=1,max_iter=5000,verbose=True)
+reg = MLPRegressor(solver='adam',learning_rate_init=0.001,alpha=1e-5,hidden_layer_sizes=(32,16,8),random_state=1,max_iter=5000,verbose=True)
 
 
-clf.fit(X_train,y_train['is_canceled'])
-reg.fit(X_train,y_train['adr'])
-predict_cancel = clf.predict(X_test)
-predict_adr = reg.predict(X_test)
+clf.fit(X_train_std,y_train['is_canceled'])
+reg.fit(X_train_std,y_train['adr'])
+predict_cancel = clf.predict(X_test_std)
+predict_adr = reg.predict(X_test_std)
 out = pd.DataFrame()
 out[['stays_in_week_nights']]=X_test[['stays_in_week_nights']]
 out[['stays_in_weekend_nights']]=X_test[['stays_in_weekend_nights']]
-out[['arrival_date_year']]=X_test[['arrival_date_year']]
+out[['arrival_date_year']]=2017
 out[['arrival_date_month']]=X_test[['arrival_date_month']]
 out[['arrival_date_day_of_month']]=X_test[['arrival_date_day_of_month']]
 out[['adr']]=pd.Series(predict_adr)
