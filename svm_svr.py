@@ -11,16 +11,15 @@ from sklearn.preprocessing import StandardScaler
 
 parser = argparse.ArgumentParser()
 parser.add_argument("infile")
-
 args=parser.parse_args()
 
 df = pd.read_csv(args.infile, sep=r'\s*,\s*', header=0, encoding='ascii', engine='python')
-
+df = df[:20000]
 svm = SVC(kernel='rbf',gamma = 1 ,shrinking = False)
-svm_reg = SVR(kernel ='rbf',gamma = 1,shrinking = False,C=1.0,epsilon=0.2)
-X_train,X_test,y_train,y_test=train_test_split(df,label[['is_canceled','adr']],test_size=0.4,random_state=0)
+svm_reg = SVR(kernel ='rbf',gamma = 100,shrinking = False,C=0.01,epsilon=0.2)
+X_train,X_test,y_train,y_test=train_test_split(df.drop(['adr','is_canceled'],axis=1),df[['adr','is_canceled']],test_size=0.2,random_state=0)
 
-print("Dadta Preprocessed")
+print("Data Preprocessed")
 sc = StandardScaler()
 sc.fit(X_train)
 X_train = sc.transform(X_train)

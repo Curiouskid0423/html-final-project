@@ -1,0 +1,12 @@
+first 20000 only
+c=100,epsilon=0.2,gamma = 1, error = 1215.792299938504 with standardlization
+c=1,epsilon=0.2,gamma = 1, error = 1918.7188354232692
+c=0.01,epsilon=0.2,gamma = 1, error = 2330.328189172878
+
+c=1,gamma=10,2023.848560167896
+gamma=100,2034.9418577098802
+
+c=100,gamma=10,1403.0543167889266
+gamma=100,1421.6258397834322
+
+c=0.01,gamma=10,
