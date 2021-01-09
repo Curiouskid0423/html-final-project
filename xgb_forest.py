@@ -4,7 +4,10 @@ import pandas as pd
 from datetime import date
 from sklearn import datasets,ensemble,metrics
 from sklearn.model_selection import train_test_split
-import xgboost as xgb
+
+from xgboost import XGBRegressor,XGBClassifier
+
+month_days = [0,0,31,59,90,120,151,181,212,243,273,304,334,365]
 
 
 parser = argparse.ArgumentParser()
@@ -23,43 +26,53 @@ X_train=df.drop(['adr','is_canceled'],axis=1)
 y_train=df[['adr','is_canceled']]
 X_test=df_test
 
+def to_month_number(row):
+	return month_days[int(row['arrival_date_month'])]+row['arrival_date_day_of_month']
+
+def total_n(row):
+	return row['stays_in_week_nights']+row['stays_in_weekend_nights']
+
+def total_guest(row):
+	return row['adults']+row['children']+row['babies']
+
+
+X_train['month_number']=X_train.apply(lambda x: to_month_number(x),axis=1)
+X_test['month_number']=X_test.apply(lambda x: to_month_number(x),axis=1)
+
+
+
+X_train['total_night']=X_train.apply(lambda x: total_n(x),axis = 1)
+X_test['total_night']=X_test.apply(lambda x: total_n(x),axis = 1)
+
+X_train['total_guests']=X_train.apply(lambda x: total_guest(x),axis = 1)
+X_test['total_guests']=X_test.apply(lambda x: total_guest(x),axis = 1)
+
+X_train=X_train.drop(['arrival_date_day_of_month','arrival_date_year','arrival_date_day_of_month'],axis=1)
+X_test=X_test.drop(['arrival_date_day_of_month','arrival_date_year','arrival_date_day_of_month'],axis=1)
+
 missing_cols = set( X_train.columns ) - set( X_test.columns )
 for c in missing_cols:
     X_test[c] = 0
 X_test = X_test[X_train.columns]
-X_train=X_train.drop(['arrival_date_year'],axis=1)
-X_test=X_test.drop(['arrival_date_year'],axis=1)
 
-dtrain_adr = xgb.DMatrix(X_train,label = y_train['adr'])
-dtrain_can = xgb.DMatrix(X_train,label = y_train['is_canceled'])
-dtest = xgb.DMatrix(X_test)
+reg = XGBRegressor(verbose=True)
+clf = XGBClassifier(verbose=True)
 
-param_adr = {'max_depth': 6, 'eta': 0.3, 'objective': 'reg:squarederror'}
-evallist_adr = [ (dtrain_adr, 'train')]
-param_can = {'max_depth': 6, 'eta': 0.3, 'objective': 'binary:logistic'}
-evallist_can = [ (dtrain_can, 'train')]
+reg.fit(X_train,y_train['adr'])
+clf.fit(X_train,y_train['is_canceled'])
 
-
-
-num_round = 1500
-adr_model = xgb.train(param_adr, dtrain_adr, num_round, evallist_adr)
-can_model = xgb.train(param_can, dtrain_can, num_round, evallist_can)
-
-
-ypred_adr = adr_model.predict(dtest)
-ypred_can = can_model.predict(dtest)
-
-
+ypred_adr = reg.predict(X_test)
+ypred_can = clf.predict(X_test)
 
 
 out = pd.DataFrame()
-out[['stays_in_week_nights']]=X_test[['stays_in_week_nights']]
-out[['stays_in_weekend_nights']]=X_test[['stays_in_weekend_nights']]
+out[['stays_in_week_nights']]=df_test[['stays_in_week_nights']]
+out[['stays_in_weekend_nights']]=df_test[['stays_in_weekend_nights']]
 out[['arrival_date_year']]=2017
-out[['arrival_date_month']]=X_test[['arrival_date_month']]
-out[['arrival_date_day_of_month']]=X_test[['arrival_date_day_of_month']]
+out[['arrival_date_month']]=df_test[['arrival_date_month']]
+out[['arrival_date_day_of_month']]=df_test[['arrival_date_day_of_month']]
 out[['adr']]=pd.Series(ypred_adr)
-out[['is_canceled']]=pd.Series(ypred_can.round())
+out[['is_canceled']]=pd.Series(ypred_can)
 out.to_csv('result.csv')
 
 #accuracy_adr = metrics.mean_squared_error(y_test['adr'],ypred_adr)

@@ -25,15 +25,14 @@ missing_cols = set( X_train.columns ) - set( X_test.columns )
 for c in missing_cols:
     X_test[c] = 0
 X_test = X_test[X_train.columns]
-X_train=X_train.drop(['arrival_date_year'],axis=1)
-X_test=X_test.drop(['arrival_date_year'],axis=1)
 sc = StandardScaler()
 sc.fit(X_train)
 X_train_std = sc.transform(X_train)
 X_test_std = sc.transform(X_test)
 
-clf = MLPClassifier(solver='adam',learning_rate_init=0.001,alpha=1e-5,hidden_layer_sizes=(20),random_state=1,max_iter=5000,verbose=True)
-reg = MLPRegressor(solver='adam',learning_rate_init=0.001,alpha=1e-5,hidden_layer_sizes=(32,16,8),random_state=1,max_iter=5000,verbose=True)
+#clf = MLPClassifier(solver='adam',learning_rate_init=0.001,alpha=1e-5,hidden_layer_sizes=(20),random_state=1,max_iter=5000,verbose=True)
+clf = ensemble.RandomForestClassifier(n_estimators=200,verbose=1)
+reg = MLPRegressor(solver='adam',learning_rate_init=0.001,alpha=1e-5,hidden_layer_sizes=(48,32,16,8),random_state=1,max_iter=5000,verbose=True)
 
 
 clf.fit(X_train_std,y_train['is_canceled'])
