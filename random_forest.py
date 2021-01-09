@@ -16,7 +16,7 @@ df = pd.read_csv(args.infile, sep=r'\s*,\s*', header=0, encoding='ascii', engine
 df_test = pd.read_csv(args.test_data, sep=r'\s*,\s*', header=0, encoding='ascii', engine='python')
 
 #X_train,X_test,y_train,y_test=train_test_split(df.drop(['adr','is_canceled'],axis=1),df[['adr','is_canceled']],test_size=0.2,random_state=0)
-print("hello")
+
 X_train=df.drop(['adr','is_canceled'],axis=1)
 y_train=df[['adr','is_canceled']]
 X_test=df_test
