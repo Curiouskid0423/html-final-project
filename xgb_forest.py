@@ -27,8 +27,8 @@ missing_cols = set( X_train.columns ) - set( X_test.columns )
 for c in missing_cols:
     X_test[c] = 0
 X_test = X_test[X_train.columns]
-#X_train=X_train.drop(['arrival_date_year'],axis=1)
-#X_test=X_test.drop(['arrival_date_year'],axis=1)
+X_train=X_train.drop(['arrival_date_year'],axis=1)
+X_test=X_test.drop(['arrival_date_year'],axis=1)
 
 dtrain_adr = xgb.DMatrix(X_train,label = y_train['adr'])
 dtrain_can = xgb.DMatrix(X_train,label = y_train['is_canceled'])
@@ -41,7 +41,7 @@ evallist_can = [ (dtrain_can, 'train')]
 
 
 
-num_round = 600
+num_round = 1500
 adr_model = xgb.train(param_adr, dtrain_adr, num_round, evallist_adr)
 can_model = xgb.train(param_can, dtrain_can, num_round, evallist_can)
 
@@ -55,7 +55,7 @@ ypred_can = can_model.predict(dtest)
 out = pd.DataFrame()
 out[['stays_in_week_nights']]=X_test[['stays_in_week_nights']]
 out[['stays_in_weekend_nights']]=X_test[['stays_in_weekend_nights']]
-out[['arrival_date_year']]=X_test[['arrival_date_year']]
+out[['arrival_date_year']]=2017
 out[['arrival_date_month']]=X_test[['arrival_date_month']]
 out[['arrival_date_day_of_month']]=X_test[['arrival_date_day_of_month']]
 out[['adr']]=pd.Series(ypred_adr)
