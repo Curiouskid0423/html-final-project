@@ -7,9 +7,6 @@ from sklearn.model_selection import train_test_split
 
 from xgboost import XGBRegressor,XGBClassifier
 
-month_days = [0,0,31,59,90,120,151,181,212,243,273,304,334,365]
-
-
 parser = argparse.ArgumentParser()
 parser.add_argument("infile")
 parser.add_argument("test_data")
@@ -36,10 +33,6 @@ def total_guest(row):
 	return row['adults']+row['children']+row['babies']
 
 
-X_train['month_number']=X_train.apply(lambda x: to_month_number(x),axis=1)
-X_test['month_number']=X_test.apply(lambda x: to_month_number(x),axis=1)
-
-
 
 X_train['total_night']=X_train.apply(lambda x: total_n(x),axis = 1)
 X_test['total_night']=X_test.apply(lambda x: total_n(x),axis = 1)
@@ -47,16 +40,18 @@ X_test['total_night']=X_test.apply(lambda x: total_n(x),axis = 1)
 X_train['total_guests']=X_train.apply(lambda x: total_guest(x),axis = 1)
 X_test['total_guests']=X_test.apply(lambda x: total_guest(x),axis = 1)
 
-X_train=X_train.drop(['arrival_date_day_of_month','arrival_date_year','arrival_date_day_of_month'],axis=1)
-X_test=X_test.drop(['arrival_date_day_of_month','arrival_date_year','arrival_date_day_of_month'],axis=1)
-
+#X_train=X_train.drop(['arrival_date_day_of_month','arrival_date_year','arrival_date_day_of_month'],axis=1)
+#X_test=X_test.drop(['arrival_date_day_of_month','arrival_date_year','arrival_date_day_of_month'],axis=1)
+X_train=X_train.drop(['Unnamed: 0'],axis=1)
+X_test=X_test.drop(['Unnamed: 0'],axis=1)
 missing_cols = set( X_train.columns ) - set( X_test.columns )
 for c in missing_cols:
     X_test[c] = 0
 X_test = X_test[X_train.columns]
+print(X_train.columns)
 
-reg = XGBRegressor(verbose=True)
-clf = XGBClassifier(verbose=True)
+reg = XGBRegressor(verbosity=1)
+clf = ensemble.RandomForestClassifier(n_estimators=100,verbose=1)
 
 reg.fit(X_train,y_train['adr'])
 clf.fit(X_train,y_train['is_canceled'])
