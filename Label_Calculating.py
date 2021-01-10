@@ -13,7 +13,7 @@ def sum(a,b):
 data = pd.read_csv(args.infile)
 data = data[data["is_canceled"]==0]
 data = data.drop(["Unnamed: 0"],axis=1)
-numdate = [30,31,30,31,31]
+
 result = pd.read_csv('test_nolabel.csv')
 result['label']=0
 for i,week_n,weekend_n,year,month,day,adr,cancel in data.itertuples():
